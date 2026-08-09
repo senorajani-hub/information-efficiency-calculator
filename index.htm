@@ -205,6 +205,12 @@
       font-size: 2.25rem;
       color: #4ade80;
     }
+
+    .pending-notice {
+      color: #f59e0b;
+      font-size: 0.95rem;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -212,7 +218,6 @@
 <div class="container">
   <h1>Information Efficiency Score Calculator</h1>
   
-  <!-- ACADEMIC ATTRIBUTION HEADER -->
   <div class="academic-header">
     <p class="model-title">“An Efficiency Driven Input-Process-Output Model for Information Literacy Measurement”</p>
     <p><strong>Proposed By:</strong> Mr. Sachin Uday Wagh</p>
@@ -221,7 +226,6 @@
   </div>
 
   <form id="calcForm">
-    <!-- USER INFORMATION -->
     <div class="user-info-grid">
       <div class="form-group">
         <label for="userName">Name</label>
@@ -233,20 +237,16 @@
       </div>
     </div>
 
-    <!-- INPUT SECTION -->
     <div class="section-header">1. Input Stage (I)</div>
     <div id="input-questions"></div>
 
-    <!-- PROCESS SECTION -->
     <div class="section-header">2. Process Stage (P)</div>
     <div id="process-questions"></div>
 
-    <!-- OUTPUT SECTION -->
     <div class="section-header">3. Output Stage (O)</div>
     <div id="output-questions"></div>
   </form>
 
-  <!-- RESULTS PANEL -->
   <div class="results-panel">
     <h2 style="margin-top: 0;">Results Summary</h2>
 
@@ -258,27 +258,27 @@
     <div class="results-grid">
       <div class="stat-card">
         <span class="label">Average Weighted Score of Input (I)</span>
-        <span class="value" id="res-i">0.000</span>
+        <span class="value" id="res-i">--</span>
       </div>
 
       <div class="stat-card">
         <span class="label">Average Weighted Score of Process (P)</span>
-        <span class="value" id="res-p">0.000</span>
+        <span class="value" id="res-p">--</span>
       </div>
 
       <div class="stat-card">
         <span class="label">Average Weighted Score of Output (O)</span>
-        <span class="value" id="res-o">0.000</span>
+        <span class="value" id="res-o">--</span>
       </div>
 
       <div class="stat-card main-metric">
         <span class="label">Information Efficiency Score (IES)</span>
-        <span class="value" id="res-ies">0.0000</span>
+        <span class="value" id="res-ies">--</span>
       </div>
 
       <div class="stat-card main-metric">
         <span class="label">Information Efficiency Percentage (IEP)</span>
-        <span class="value" id="res-iep">0.00%</span>
+        <span class="value" id="res-iep">--</span>
       </div>
     </div>
   </div>
@@ -287,30 +287,30 @@
 <script>
   const dataset = {
     input: [
-      { id: "i1", text: "Do you usually understand what kind of information is needed before starting a task?", weight: 0.15, type: "agreement", defaultVal: 3 },
-      { id: "i2", text: "Are you able to clearly define the topic or problem you need to research?", weight: 0.20, type: "confidence", defaultVal: 2 },
-      { id: "i3", text: "Can you break down a broad research topic into smaller, more specific questions?", weight: 0.15, type: "frequency", defaultVal: 4 },
-      { id: "i4", text: "Are you familiar with different types of information sources such as books, articles, and websites?", weight: 0.10, type: "confidence", defaultVal: 1 },
-      { id: "i5", text: "Do you create a plan or outline for how and where to search for information before beginning your research?", weight: 0.20, type: "frequency", defaultVal: 5 },
-      { id: "i6", text: "Do you think critically about the purpose and scope of your research before collecting information?", weight: 0.20, type: "agreement", defaultVal: 3 }
+      { id: "i1", text: "Do you usually understand what kind of information is needed before starting a task?", weight: 0.15, type: "agreement" },
+      { id: "i2", text: "Are you able to clearly define the topic or problem you need to research?", weight: 0.20, type: "confidence" },
+      { id: "i3", text: "Can you break down a broad research topic into smaller, more specific questions?", weight: 0.15, type: "frequency" },
+      { id: "i4", text: "Are you familiar with different types of information sources such as books, articles, and websites?", weight: 0.10, type: "confidence" },
+      { id: "i5", text: "Do you create a plan or outline for how and where to search for information before beginning your research?", weight: 0.20, type: "frequency" },
+      { id: "i6", text: "Do you think critically about the purpose and scope of your research before collecting information?", weight: 0.20, type: "agreement" }
     ],
     process: [
-      { id: "p1", text: "Are you confident in using search engines, online databases, or library catalogs to find relevant information?", weight: 0.15, type: "confidence", defaultVal: 1 },
-      { id: "p2", text: "Can you identify whether a source is credible or not when conducting research?", weight: 0.15, type: "confidence", defaultVal: 4 },
-      { id: "p3", text: "Do you evaluate sources using criteria such as currency, relevance, authority, accuracy, and purpose (CRAAP)?", weight: 0.20, type: "frequency", defaultVal: 2 },
-      { id: "p4", text: "Are you able to read, analyze, and select useful information from various sources?", weight: 0.15, type: "confidence", defaultVal: 1 },
-      { id: "p5", text: "Do you take organized notes or arrange the information you collect in a structured way?", weight: 0.10, type: "frequency", defaultVal: 3 },
-      { id: "p6", text: "Do you understand how to cite sources correctly to avoid plagiarism?", weight: 0.10, type: "agreement", defaultVal: 2 },
-      { id: "p7", text: "Do you reflect on the reliability or possible bias in the sources you use?", weight: 0.15, type: "frequency", defaultVal: 1 }
+      { id: "p1", text: "Are you confident in using search engines, online databases, or library catalogs to find relevant information?", weight: 0.15, type: "confidence" },
+      { id: "p2", text: "Can you identify whether a source is credible or not when conducting research?", weight: 0.15, type: "confidence" },
+      { id: "p3", text: "Do you evaluate sources using criteria such as currency, relevance, authority, accuracy, and purpose (CRAAP)?", weight: 0.20, type: "frequency" },
+      { id: "p4", text: "Are you able to read, analyze, and select useful information from various sources?", weight: 0.15, type: "confidence" },
+      { id: "p5", text: "Do you take organized notes or arrange the information you collect in a structured way?", weight: 0.10, type: "frequency" },
+      { id: "p6", text: "Do you understand how to cite sources correctly to avoid plagiarism?", weight: 0.10, type: "agreement" },
+      { id: "p7", text: "Do you reflect on the reliability or possible bias in the sources you use?", weight: 0.15, type: "frequency" }
     ],
     output: [
-      { id: "o1", text: "Are you able to combine information from multiple sources into a clear and coherent summary or argument?", weight: 0.20, type: "confidence", defaultVal: 2 },
-      { id: "o2", text: "Do you feel confident presenting your research findings in writing, speaking, or other formats?", weight: 0.15, type: "confidence", defaultVal: 4 },
-      { id: "o3", text: "Do you use visual aids, digital tools, or media to help communicate your research effectively?", weight: 0.10, type: "frequency", defaultVal: 3 },
-      { id: "o4", text: "Do you consider the needs and background of your audience when communicating information?", weight: 0.10, type: "agreement", defaultVal: 2 },
-      { id: "o5", text: "Do you evaluate how effective your research process was after completing a task?", weight: 0.15, type: "frequency", defaultVal: 4 },
-      { id: "o6", text: "Do you use what you’ve learned from previous research experiences to improve future work?", weight: 0.15, type: "frequency", defaultVal: 2 },
-      { id: "o7", text: "Compared to when you started, do you feel more confident in your ability to find and use information?", weight: 0.15, type: "confidence", defaultVal: 3 }
+      { id: "o1", text: "Are you able to combine information from multiple sources into a clear and coherent summary or argument?", weight: 0.20, type: "confidence" },
+      { id: "o2", text: "Do you feel confident presenting your research findings in writing, speaking, or other formats?", weight: 0.15, type: "confidence" },
+      { id: "o3", text: "Do you use visual aids, digital tools, or media to help communicate your research effectively?", weight: 0.10, type: "frequency" },
+      { id: "o4", text: "Do you consider the needs and background of your audience when communicating information?", weight: 0.10, type: "agreement" },
+      { id: "o5", text: "Do you evaluate how effective your research process was after completing a task?", weight: 0.15, type: "frequency" },
+      { id: "o6", text: "Do you use what you’ve learned from previous research experiences to improve future work?", weight: 0.15, type: "frequency" },
+      { id: "o7", text: "Compared to when you started, do you feel more confident in your ability to find and use information?", weight: 0.15, type: "confidence" }
     ]
   };
 
@@ -338,6 +338,8 @@
     ]
   };
 
+  const totalQuestionsCount = dataset.input.length + dataset.process.length + dataset.output.length;
+
   function renderSection(questions, containerId) {
     const container = document.getElementById(containerId);
     let html = "";
@@ -351,7 +353,7 @@
           <div class="options-grid">
             ${options.map(opt => `
               <label class="option-label">
-                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" ${opt.score === q.defaultVal ? 'checked' : ''} onchange="calculate()">
+                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" onchange="calculate()">
                 ${opt.score} - ${opt.label}
               </label>
             `).join('')}
@@ -372,6 +374,19 @@
   }
 
   function calculate() {
+    const selectedInputs = document.querySelectorAll('input[type="radio"]:checked');
+    const answeredCount = selectedInputs.length;
+
+    if (answeredCount < totalQuestionsCount) {
+      const remaining = totalQuestionsCount - answeredCount;
+      document.getElementById('res-i').innerHTML = `<span class="pending-notice">Please answer all questions (${remaining} remaining)</span>`;
+      document.getElementById('res-p').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
+      document.getElementById('res-o').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
+      document.getElementById('res-ies').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
+      document.getElementById('res-iep').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
+      return;
+    }
+
     function processCategory(catArray) {
       let totalWeightedScore = 0;
       catArray.forEach(q => {
@@ -390,18 +405,17 @@
     const processRes = processCategory(dataset.process);
     const outputRes = processCategory(dataset.output);
 
-    // IES Formula: O_avg / ( (1 - I_avg) + 0.60 * (1 - P_avg) )
     const I = inputRes.avg;
     const P = processRes.avg;
     const O = outputRes.avg;
 
-    const denominator = (1 - I) + 0.60 * (1 - P);
+    const wI = 0.4;
+    const wP = 0.6;
+    const denominator = (wI * (1 - I)) + (wP * (1 - P));
     const ies = denominator !== 0 ? O / denominator : 0;
 
-    // IEP Formula: [2.222 * (IES - 0.4167)] * 10
     const iep = (2.222 * (ies - 0.4167)) * 10;
 
-    // Render Results
     document.getElementById('res-i').textContent = I.toFixed(3);
     document.getElementById('res-p').textContent = P.toFixed(3);
     document.getElementById('res-o').textContent = O.toFixed(3);
@@ -410,12 +424,10 @@
     document.getElementById('res-iep').textContent = iep.toFixed(2) + "%";
   }
 
-  // Initialize Form
   renderSection(dataset.input, 'input-questions');
   renderSection(dataset.process, 'process-questions');
   renderSection(dataset.output, 'output-questions');
   
-  // Initial Calculation & Receipt Sync
   calculate();
   updateReceipt();
 </script>
