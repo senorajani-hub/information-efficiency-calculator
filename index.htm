@@ -414,7 +414,8 @@
     const denominator = (wI * (1 - I)) + (wP * (1 - P));
     const ies = denominator !== 0 ? O / denominator : 0;
 
-    const iep = (2.222 * (ies - 0.4167)) * 10;
+    // Exact IEP Formula: [(2.222 * IES) - 0.4167] * 10
+    const iep = ((2.222 * ies) - 0.4167) * 10;
 
     document.getElementById('res-i').textContent = I.toFixed(3);
     document.getElementById('res-p').textContent = P.toFixed(3);
