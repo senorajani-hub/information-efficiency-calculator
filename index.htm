@@ -387,35 +387,42 @@
       return;
     }
 
-    function processCategory(catArray) {
-      let totalWeightedScore = 0;
+    // Helper to sum up weighted score in a category
+    function getWeightedSum(catArray) {
+      let sum = 0;
       catArray.forEach(q => {
         const selectedOption = document.querySelector(`input[name="${q.id}"]:checked`);
         if (selectedOption) {
           const score = parseFloat(selectedOption.value);
           const weight = parseFloat(selectedOption.getAttribute('data-weight'));
-          totalWeightedScore += score * weight;
+          sum += score * weight;
         }
       });
-      const avgWeightedScore = totalWeightedScore / catArray.length;
-      return { total: totalWeightedScore, avg: avgWeightedScore };
+      return sum;
     }
 
-    const inputRes = processCategory(dataset.input);
-    const processRes = processCategory(dataset.process);
-    const outputRes = processCategory(dataset.output);
+    // Calculate stage values exactly as formatted in the spreadsheet
+    const inputSum = getWeightedSum(dataset.input);
+    const processSum = getWeightedSum(dataset.process);
+    const outputSum = getWeightedSum(dataset.output);
 
-    const I = inputRes.avg;
-    const P = processRes.avg;
-    const O = outputRes.avg;
+    // Normalize each section by number of questions (Input: 6, Process: 7, Output: 7)
+    const I = inputSum / dataset.input.length;
+    const P = processSum / dataset.process.length;
+    const O = outputSum / dataset.output.length;
 
     const wI = 0.4;
     const wP = 0.6;
+
+    // Denominator with inverted penalty logic: 0.4*(1 - I) + 0.6*(1 - P)
     const denominator = (wI * (1 - I)) + (wP * (1 - P));
     const ies = denominator !== 0 ? O / denominator : 0;
 
-    // Exact IEP Formula: [(2.222 * IES) - 0.4167] * 10
-    const iep = ((2.222 * ies) - 0.4167) * 10;
+    // Standard Min-Max Normalization Formula (0.00% to 100.00%):
+    // IEP (%) = ((IES - 0.168539) / 2.831461) * 100
+    const iesMin = 0.168539;
+    const iesRange = 2.831461;
+    const iep = Math.max(0, Math.min(100, ((ies - iesMin) / iesRange) * 100));
 
     document.getElementById('res-i').textContent = I.toFixed(3);
     document.getElementById('res-p').textContent = P.toFixed(3);
