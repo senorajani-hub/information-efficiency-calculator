@@ -7,6 +7,7 @@
   <style>
     :root {
       --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --text-color: #1e293b;
@@ -165,12 +166,46 @@
       border-color: var(--primary-color);
     }
 
+    .submit-btn-container {
+      margin-top: 35px;
+      text-align: center;
+    }
+
+    .submit-btn {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Hide results panel initially */
     .results-panel {
+      display: none;
       margin-top: 40px;
       background-color: #0f172a;
       color: #ffffff;
       padding: 25px;
       border-radius: 12px;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .user-receipt {
@@ -221,12 +256,6 @@
       font-size: 2.25rem;
       color: #4ade80;
     }
-
-    .pending-notice {
-      color: #f59e0b;
-      font-size: 0.95rem;
-      font-style: italic;
-    }
   </style>
 </head>
 <body>
@@ -241,7 +270,7 @@
     <p><strong>Under the Guidance of:</strong> Dr. Sharmila Vithalrao Gadge</p>
   </div>
 
-  <form id="calcForm" onsubmit="return false;">
+  <form id="calcForm" onsubmit="handleSubmit(event)">
     <div class="user-info-grid">
       <div class="form-group">
         <label for="userName">Name <span class="required-star">*</span></label>
@@ -261,9 +290,13 @@
 
     <div class="section-header">3. Output Stage (O)</div>
     <div id="output-questions"></div>
+
+    <div class="submit-btn-container">
+      <button type="submit" class="submit-btn">Calculate Results</button>
+    </div>
   </form>
 
-  <div class="results-panel">
+  <div class="results-panel" id="resultsPanel">
     <h2 style="margin-top: 0;">Results Summary</h2>
 
     <div class="user-receipt">
@@ -354,8 +387,6 @@
     ]
   };
 
-  const totalQuestionsCount = dataset.input.length + dataset.process.length + dataset.output.length;
-
   function renderSection(questions, containerId) {
     const container = document.getElementById(containerId);
     let html = "";
@@ -369,7 +400,7 @@
           <div class="options-grid">
             ${options.map(opt => `
               <label class="option-label">
-                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" required onchange="calculate()">
+                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" required onchange="clearError('${q.id}')">
                 ${opt.score} - ${opt.label}
               </label>
             `).join('')}
@@ -389,9 +420,17 @@
     document.getElementById('rec-email').textContent = email ? email : "Not specified";
   }
 
+  function clearError(questionId) {
+    const block = document.getElementById(`block-${questionId}`);
+    if (block) {
+      block.classList.remove('unanswered');
+    }
+  }
+
   function checkMissingQuestions() {
     const allCategories = [...dataset.input, ...dataset.process, ...dataset.output];
     let missingCount = 0;
+    let firstMissingBlock = null;
 
     allCategories.forEach(q => {
       const block = document.getElementById(`block-${q.id}`);
@@ -400,26 +439,38 @@
       if (!selectedOption) {
         block.classList.add('unanswered');
         missingCount++;
+        if (!firstMissingBlock) firstMissingBlock = block;
       } else {
         block.classList.remove('unanswered');
       }
     });
 
+    if (firstMissingBlock) {
+      firstMissingBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     return missingCount;
   }
 
-  function calculate() {
-    const missingCount = checkMissingQuestions();
+  function handleSubmit(event) {
+    event.preventDefault();
 
+    const missingCount = checkMissingQuestions();
     if (missingCount > 0) {
-      document.getElementById('res-i').innerHTML = `<span class="pending-notice">Please answer all 20 questions (${missingCount} remaining)</span>`;
-      document.getElementById('res-p').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
-      document.getElementById('res-o').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
-      document.getElementById('res-ies').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
-      document.getElementById('res-iep').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
+      alert(`Please answer all 20 mandatory questions (${missingCount} remaining).`);
       return;
     }
 
+    updateReceipt();
+    calculate();
+
+    // Show the results panel and scroll down to it
+    const resultsPanel = document.getElementById('resultsPanel');
+    resultsPanel.style.display = 'block';
+    resultsPanel.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function calculate() {
     // Helper to sum up weighted score in a category
     function getWeightedSum(catArray) {
       let sum = 0;
@@ -434,7 +485,6 @@
       return sum;
     }
 
-    // Calculate stage values exactly as formatted in the spreadsheet
     const inputSum = getWeightedSum(dataset.input);
     const processSum = getWeightedSum(dataset.process);
     const outputSum = getWeightedSum(dataset.output);
@@ -451,8 +501,7 @@
     const denominator = (wI * (1 - I)) + (wP * (1 - P));
     const ies = denominator !== 0 ? O / denominator : 0;
 
-    // Standard Min-Max Normalization Formula (0.00% to 100.00%):
-    // IEP (%) = ((IES - 0.168539) / 2.831461) * 100
+    // Min-Max Normalization Formula (0.00% to 100.00%):
     const iesMin = 0.168539;
     const iesRange = 2.831461;
     const iep = Math.max(0, Math.min(100, ((ies - iesMin) / iesRange) * 100));
@@ -468,9 +517,6 @@
   renderSection(dataset.input, 'input-questions');
   renderSection(dataset.process, 'process-questions');
   renderSection(dataset.output, 'output-questions');
-  
-  calculate();
-  updateReceipt();
 </script>
 
 </body>
