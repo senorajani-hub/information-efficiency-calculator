@@ -12,6 +12,8 @@
       --text-color: #1e293b;
       --border-color: #e2e8f0;
       --accent-color: #eff6ff;
+      --error-color: #ef4444;
+      --error-bg: #fef2f2;
     }
 
     body {
@@ -111,13 +113,27 @@
     }
 
     .question-block {
-      padding: 15px 0;
+      padding: 15px 12px;
       border-bottom: 1px solid var(--border-color);
+      border-radius: 6px;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    /* Highlight unanswered questions */
+    .question-block.unanswered {
+      background-color: var(--error-bg);
+      border-left: 4px solid var(--error-color);
     }
 
     .question-text {
       font-weight: 600;
       margin-bottom: 10px;
+    }
+
+    .required-star {
+      color: var(--error-color);
+      font-weight: bold;
+      margin-left: 3px;
     }
 
     .question-meta {
@@ -225,15 +241,15 @@
     <p><strong>Under the Guidance of:</strong> Dr. Sharmila Vithalrao Gadge</p>
   </div>
 
-  <form id="calcForm">
+  <form id="calcForm" onsubmit="return false;">
     <div class="user-info-grid">
       <div class="form-group">
-        <label for="userName">Name</label>
-        <input type="text" id="userName" placeholder="Enter your full name" oninput="updateReceipt()">
+        <label for="userName">Name <span class="required-star">*</span></label>
+        <input type="text" id="userName" placeholder="Enter your full name" required oninput="updateReceipt()">
       </div>
       <div class="form-group">
-        <label for="userEmail">Email Id</label>
-        <input type="email" id="userEmail" placeholder="Enter your email address" oninput="updateReceipt()">
+        <label for="userEmail">Email Id <span class="required-star">*</span></label>
+        <input type="email" id="userEmail" placeholder="Enter your email address" required oninput="updateReceipt()">
       </div>
     </div>
 
@@ -347,13 +363,13 @@
     questions.forEach((q, idx) => {
       const options = optionTypes[q.type];
       html += `
-        <div class="question-block">
-          <div class="question-text">${idx + 1}. ${q.text}</div>
+        <div class="question-block" id="block-${q.id}">
+          <div class="question-text">${idx + 1}. ${q.text} <span class="required-star">*</span></div>
           <div class="question-meta">Weight: ${q.weight}</div>
           <div class="options-grid">
             ${options.map(opt => `
               <label class="option-label">
-                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" onchange="calculate()">
+                <input type="radio" name="${q.id}" value="${opt.score}" data-weight="${q.weight}" required onchange="calculate()">
                 ${opt.score} - ${opt.label}
               </label>
             `).join('')}
@@ -373,17 +389,34 @@
     document.getElementById('rec-email').textContent = email ? email : "Not specified";
   }
 
-  function calculate() {
-    const selectedInputs = document.querySelectorAll('input[type="radio"]:checked');
-    const answeredCount = selectedInputs.length;
+  function checkMissingQuestions() {
+    const allCategories = [...dataset.input, ...dataset.process, ...dataset.output];
+    let missingCount = 0;
 
-    if (answeredCount < totalQuestionsCount) {
-      const remaining = totalQuestionsCount - answeredCount;
-      document.getElementById('res-i').innerHTML = `<span class="pending-notice">Please answer all questions (${remaining} remaining)</span>`;
-      document.getElementById('res-p').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
-      document.getElementById('res-o').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
-      document.getElementById('res-ies').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
-      document.getElementById('res-iep').innerHTML = `<span class="pending-notice">Please answer all questions</span>`;
+    allCategories.forEach(q => {
+      const block = document.getElementById(`block-${q.id}`);
+      const selectedOption = document.querySelector(`input[name="${q.id}"]:checked`);
+      
+      if (!selectedOption) {
+        block.classList.add('unanswered');
+        missingCount++;
+      } else {
+        block.classList.remove('unanswered');
+      }
+    });
+
+    return missingCount;
+  }
+
+  function calculate() {
+    const missingCount = checkMissingQuestions();
+
+    if (missingCount > 0) {
+      document.getElementById('res-i').innerHTML = `<span class="pending-notice">Please answer all 20 questions (${missingCount} remaining)</span>`;
+      document.getElementById('res-p').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
+      document.getElementById('res-o').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
+      document.getElementById('res-ies').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
+      document.getElementById('res-iep').innerHTML = `<span class="pending-notice">Please answer all 20 questions</span>`;
       return;
     }
 
